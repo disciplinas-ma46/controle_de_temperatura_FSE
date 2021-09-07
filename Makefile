@@ -10,7 +10,10 @@ OBJ = $(patsubst $(SRCDIR)/%.c, $(OBJDIR)/%.o, $(SRC))
 EXE = bin/bin
 
 all: clean $(EXE) 
-    
+
+run:
+	./bin/bin
+
 $(EXE): $(OBJ) 
 	$(CC) $(LDFLAGS) $(OBJDIR)/*.o -o $@ 
 

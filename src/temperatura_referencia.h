@@ -12,16 +12,17 @@
 
 #include <stdio.h>
 #include <unistd.h>
+#include <stdlib.h>
 
 /** definições de struct e funções */
 typedef struct TR {
     // não ler diretamente, usar ler_tr()
-    int temperatura_referencia;
+    float temperatura_referencia;
 
     //"class" functions
     void (*close)();
     float (*ler_tr)();
-    void (*atualizar_tr)(float );
+    void (*atualizar_tr)();
 
 } TR;
 TR * new_potenciometro_tr();
@@ -89,7 +90,7 @@ float ler_tr_t() {
 }
 void atualizar_tr_t() {
     printf("Digite a nova temperatura de referencia: ");
-    scanf("%f", teclado_tr->temperatura_referencia);
+    scanf("%f",  &teclado_tr->temperatura_referencia);
     // fix validar entrada
     // printf("Valor lido: %f", teclado_tr->temperatura_referencia);
 }
@@ -99,14 +100,14 @@ void close_t() {
 
 void teste_tr() {
     TR * t = new_teclado_tr();
-    printf("Valor t: %f", t->ler_tr());
+    printf("Valor t: %f\n", t->ler_tr());
     t->atualizar_tr();
-    printf("Valor t: %f", t->ler_tr());
+    printf("Valor t: %f\n", t->ler_tr());
 
     TR * p = new_potenciometro_tr();
-    printf("Valor p: %f", t->ler_tr());
-    t->atualizar_tr();
-    printf("Valor p: %f", t->ler_tr());
+    printf("Valor p: %f\n", p->ler_tr());
+    p->atualizar_tr();
+    printf("Valor p: %f\n", p->ler_tr());
 
 }
 
