@@ -5,8 +5,8 @@
 
 int main(int argc, const char * argv[]) {
 
-    // teste_tr();
-    teste_controle();
+    teste_tr();
+    // teste_controle();
 
     return 0;
 }

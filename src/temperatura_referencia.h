@@ -77,6 +77,7 @@ float ler_tr_p() {
     return potenciometro_tr->temperatura_referencia;
 }
 void atualizar_tr_p() {
+    // fix atualizar a cada 1 segundo pela UART com a ESP32
     potenciometro_tr->temperatura_referencia += 1;
 }
 void close_p() {

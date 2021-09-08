@@ -1,5 +1,7 @@
 // #include "uart.h"
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <unistd.h>         //Used for UART
 #include <fcntl.h>          //Used for UART
 #include <termios.h>        //Used for UART
@@ -14,6 +16,8 @@ typedef struct uart {
 
     //"class" functions
     void (*close)();
+    float (*solicita_TI)();
+
     void (*envia_string)(char *);
     void (*envia_int)(int );
     void (*solicita_float)();
@@ -26,7 +30,7 @@ void solicita_float();
 void configura_uart(uart *);
 uart* new_uart();
 void teste_uart();
-
+float solicita_TI();
 
 /* singleton para UART */
 
@@ -51,6 +55,8 @@ uart* new_uart()
 
         // métodos
         uart_object->close = close_uart;
+        uart_object->solicita_TI = solicita_TI;
+
         uart_object->envia_string = envia_string;
         uart_object->envia_int = envia_int;
         uart_object->solicita_float = solicita_float;
@@ -81,7 +87,7 @@ void envia_string(char *mensagem) {
         envio[2+tamanho+i] = matricula[i];
     }
 
-    int count = write(uart0_filestream, envio, tamanho+6);
+    int count = write(uart_object->uart0_filestream, envio, tamanho+6);
     if (count < 0) {
         printf("UART TX error\n");
         exit(0);
@@ -100,7 +106,7 @@ void envia_int(int numero) {
         envio[5+i] = matricula[i];
     }
 
-    int count = write(uart0_filestream, envio, 9);
+    int count = write(uart_object->uart0_filestream, envio, 9);
     if (count < 0) {
         printf("UART TX error\n");
         exit(0);
@@ -111,7 +117,7 @@ void envia_int(int numero) {
 void solicita_float() {
     unsigned char envio[200] = {0xA1, 5, 4, 8, 1};
 
-    int count = read(uart0_filestream, envio, 5);
+    int count = read(uart_object->uart0_filestream, envio, 5);
     if (count < 0) {
         printf("UART TX error\n");
         // exit(0);
@@ -119,6 +125,44 @@ void solicita_float() {
     printf("escrito. %d\n", count);
 
     // return count;
+}
+
+float solicita_TI() {
+    unsigned char envio[200] = {0x23, 0xC1, 5, 4, 8, 1};
+
+    int count = read(uart_object->uart0_filestream, envio, 6);
+    if (count < 0) {
+        printf("UART TX error\n");
+        // exit(0);
+    }
+    // printf("TI solicitado\n");
+
+    // fix definir outro tempo, pois será usado um SIGALARM a cada 1 segundo
+    sleep(1);
+
+    //----- CHECK FOR ANY RX BYTES -----
+    // Read up to 255 characters from the port if they are there
+    unsigned char rx_buffer[256];
+    int rx_length = read(uart_object->uart0_filestream, (void*)rx_buffer, 255);      //Filestream, buffer to store in, number of bytes to read (max)
+    if (rx_length < 0)
+    {
+        printf("Erro na leitura.\n"); //An error occured (will occur if there are no bytes)
+    }
+    else if (rx_length == 0)
+    {
+        printf("Nenhum dado disponível.\n"); //No data waiting
+    }
+    else
+    {
+        //Bytes received
+        rx_buffer[rx_length] = '\0';
+        // printf("%i Bytes lidos : %s\n", rx_length, rx_buffer);
+        float temperatura_interna;
+        memcpy(&temperatura_interna, rx_buffer, 4*sizeof(unsigned char));
+        return temperatura_interna;
+    }
+
+    return 0.0;
 }
 
 void configura_uart(uart *u) {
@@ -135,8 +179,10 @@ void configura_uart(uart *u) {
 
 void teste_uart() {
     uart *teste = new_uart();
-    teste->envia_string("Testando uart...");
-    teste->envia_int(25);
+    // teste->envia_string("Testando uart...");
+    // teste->envia_int(25);
+    float ti = teste->solicita_TI();
+    printf("Temperatura interna lida: %f \n", ti);
     teste->close();
 }
 
