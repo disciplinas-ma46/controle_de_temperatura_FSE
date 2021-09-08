@@ -1,8 +1,5 @@
 .vscode
-bin/.*
 bin/bin
-inc/.*
-obj/.*
 
 # Prerequisites
 *.d
