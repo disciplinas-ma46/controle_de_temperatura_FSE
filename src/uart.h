@@ -5,7 +5,7 @@
 #include <unistd.h>         //Used for UART
 #include <fcntl.h>          //Used for UART
 #include <termios.h>        //Used for UART
-
+#include "crc16.h"
 
 #ifndef UART_H_
 #define UART_H_
@@ -23,7 +23,7 @@ typedef struct uart {
     void (*solicita_float)();
 } uart;
 
-void close();
+void close_uart();
 void envia_string(char *);
 void envia_int(int );
 void solicita_float();
@@ -128,11 +128,26 @@ void solicita_float() {
 }
 
 float solicita_TI() {
-    unsigned char envio[200] = {0x23, 0xC1, 5, 4, 8, 1};
+    unsigned char envio[200] = {0x01, 0x23, 0xC1, 5, 4, 8, 1, 0x4F, 0xAD};
+    // short cod_crc = calcula_CRC(envio, 7);
 
-    int count = read(uart_object->uart0_filestream, envio, 6);
+    // memcpy(&envio[7], &cod_crc, 2);
+    // envio[9] = envio[7];
+    // envio[7] = envio[8];
+    // envio[8] = envio[9];
+    // envio[7] = (unsigned char)(  )
+
+    printf("[crc %x] Codigo de envio: ", 1);
+    for(int i=0;i<9;i++) {
+		printf("%x ", envio[i]);
+	}
+    printf("\n");
+
+
+    int count = read(uart_object->uart0_filestream, envio, 9);
     if (count < 0) {
-        printf("UART TX error\n");
+        printf("UART TX error: erro ao solicitar TI\n");
+        return 0.0;
         // exit(0);
     }
     // printf("TI solicitado\n");
@@ -146,7 +161,7 @@ float solicita_TI() {
     int rx_length = read(uart_object->uart0_filestream, (void*)rx_buffer, 255);      //Filestream, buffer to store in, number of bytes to read (max)
     if (rx_length < 0)
     {
-        printf("Erro na leitura.\n"); //An error occured (will occur if there are no bytes)
+        printf("Erro na leitura de buffer\n"); //An error occured (will occur if there are no bytes)
     }
     else if (rx_length == 0)
     {
