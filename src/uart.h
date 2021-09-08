@@ -128,23 +128,29 @@ void solicita_float() {
 }
 
 float solicita_TI() {
-    unsigned char envio[200] = {0x01, 0x23, 0xC1, 5, 4, 8, 1, 0x4F, 0xAD};
-    // short cod_crc = calcula_CRC(envio, 7);
+    // unsigned char envio[200] = {0x01, 0x23, 0xC1, 5, 4, 8, 1, 0x4F, 0xAD};
+    unsigned char envio[200] = {0x01, 0x23, 0xC1, 0x60, 0x89};
+    int tamanho = 3;
+    short cod_crc = calcula_CRC(envio, tamanho);
+    // unsigned char * char_crc = (unsigned char *) &cod_crc);
 
-    // memcpy(&envio[7], &cod_crc, 2);
-    // envio[9] = envio[7];
-    // envio[7] = envio[8];
-    // envio[8] = envio[9];
+    // envio[tamanho] = ([];
+
+    memcpy(&envio[tamanho], &cod_crc, 2);
+    envio[tamanho+2] = envio[tamanho];
+    envio[tamanho] = envio[tamanho+1];
+    envio[tamanho+1] = envio[tamanho+2];
+    tamanho += 2;
     // envio[7] = (unsigned char)(  )
 
-    printf("[crc %x] Codigo de envio: ", 1);
-    for(int i=0;i<9;i++) {
+    printf("[crc %x] Codigo de envio: ", cod_crc);
+    for(int i=0;i<tamanho;i++) {
 		printf("%x ", envio[i]);
 	}
     printf("\n");
 
 
-    int count = read(uart_object->uart0_filestream, envio, 9);
+    int count = read(uart_object->uart0_filestream, envio, tamanho);
     if (count < 0) {
         printf("UART TX error: erro ao solicitar TI\n");
         return 0.0;
